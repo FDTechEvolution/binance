@@ -1,0 +1,21 @@
+.icon-on-hover:hover {
+    color: #3f51b5 !important;
+    cursor: pointer;
+}
+
+#is-bar {
+    width: 0;
+    height: 3px;
+    background-color: #3f51b54a;
+}
+
+.avg-hilight {
+    font-weight: 500 !important;
+}
+
+.bg-negative {
+    background-color: #dd00000f;
+}
+.bg-positive {
+    background-color: #02d76314;
+}
