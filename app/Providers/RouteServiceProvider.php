@@ -21,6 +21,7 @@ class RouteServiceProvider extends ServiceProvider
 
     // public const BINANCE_API = 'https://api.binance.com/api/v3/avgPrice?symbol=';
     public const BINANCE_API = 'https://api.binance.com/api/v3/ticker/price?symbols=';
+    public const BINANCE_FAPI = 'https://fapi.binance.com/fapi/v1';
 
     /**
      * The controller namespace for the application.

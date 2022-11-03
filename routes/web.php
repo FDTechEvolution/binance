@@ -32,6 +32,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/edit', [FeatureController::class, 'update'])->name('feature-edit');
     });
 
+    Route::prefix('/crypto-screener')->group(function () {
+        Route::get('/', function() { return view('cryptoScreener.index'); })->name('crypto-screener');
+    });
+
     Route::prefix('/status')->group(function () {
         Route::get('/', [StatusController::class, 'index'])->name('status');
         Route::get('/close/{coin}', [StatusController::class, 'setCloseStatus'])->name('close-status');

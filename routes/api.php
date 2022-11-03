@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\RegisterController;
 use App\Http\Controllers\Api\V1\FeatureController;
 use App\Http\Controllers\Api\V1\StatusController;
 use App\Http\Controllers\Api\V1\OrderHistoryController;
+use App\Http\Controllers\Api\V1\CryptoScreenerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +32,11 @@ Route::prefix('/features')->group(function () {
 Route::prefix('/status')->group(function () {
     Route::get('/coin', [StatusController::class, 'coin']);
 });
+Route::prefix('/crypto-screener')->group(function () {
+    Route::get('/list', [CryptoScreenerController::class, 'getCryptoScreener']);
+});
+
 Route::get('/update-avg-price', [FeatureController::class, 'update_avg_price']);
+Route::get('/update-crypto-screener', [CryptoScreenerController::class, 'getPremiumIndex']);
 Route::get('/orders/get-order', [OrderHistoryController::class, 'getOrder']);
 Route::get('/orders/get-coin', [OrderHistoryController::class, 'getCoin']);

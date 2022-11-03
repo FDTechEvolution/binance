@@ -15,6 +15,10 @@
                             class="ti-home"></i><span> Features </span></a>
                 </li>
                 <li>
+                    <a href="{{ route('crypto-screener') }}" class="waves-effect waves-primary"><i
+                            class="ti-home"></i><span> Crypto Screener </span></a>
+                </li>
+                <li>
                     <a href="{{ route('status') }}" class="waves-effect waves-primary"><i
                             class="ti-unlink"></i><span> Coin Status </span></a>
                 </li>
