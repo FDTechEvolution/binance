@@ -29,7 +29,7 @@ export default {
         },
         isPercent(last_price, is_price) {
             let num = ((last_price - is_price)/is_price)*100
-            return num.toFixed(3)
+            return num.toFixed(2)
         }
     },
     template: `<div>
@@ -50,9 +50,11 @@ export default {
             </thead>
             <tr v-for="(list, index) in lists" :key="index">
                 <td class="text-center">{{ index+1 }}</td>
-                <td>{{ list.symbol }}</td>
+                <td><a href="https://www.binance.com/en/futures/{{list.symbol}}?_from=markets">{{ list.symbol }}</a></td>
                 <td class="text-center">{{ list.last_price }}</td>
-                <td class="text-center">{{ list.m_2 }} ({{ isPercent(list.last_price, list.m_2) }}%)</td>
+                <td class="text-center">
+                    {{ list.m_2ch }}% <small>{{list.m_2}}</small>
+                </td>
                 <td class="text-center">{{ list.m_5 }} ({{ isPercent(list.last_price, list.m_5) }}%)</td>
                 <td class="text-center">{{ list.m_10 }} ({{ isPercent(list.last_price, list.m_10) }}%)</td>
                 <td class="text-center">{{ list.m_30 }} ({{ isPercent(list.last_price, list.m_30) }}%)</td>
