@@ -32,9 +32,14 @@ class CryptoScreenerController extends Controller
         array_multisort($key_values, SORT_DESC, $usdm_price);
 
         foreach($usdm_price as $index => $coin){
-            if(((float)$coin['m_5ch'] >= 2) || ((float)$coin['m_5ch'] <= (-2))){
-                $this->sendTelegram($coin['symbol'],$coin['m_5ch']);
+             //unset busd
+            if ($this->endsWith($coin['symbol'], "USDT")) {
+                if(((float)$coin['m_5ch'] >= 2) || ((float)$coin['m_5ch'] <= (-2))){
+                    $this->sendTelegram($coin['symbol'],$coin['m_5ch']);
+                }
             }
+
+            
         }
         
         
@@ -111,6 +116,14 @@ class CryptoScreenerController extends Controller
             }
         }
 
+        //unset busd
+        foreach($usdm_list as $index => $coin){
+            if ($this->endsWith($coin['symbol'], "BUSD")) {
+                unset($usdm_list[$index]);
+            }
+        }
+
+        //cal %
         foreach($usdm_list as $index => $coin){
             foreach($this->col_list as $index2 => $colName){
                 if($index2 != 0){
@@ -136,5 +149,14 @@ class CryptoScreenerController extends Controller
             //     Log::debug($item[$col]);
             // }
         }
+    }
+
+    private function endsWith($string, $endString)
+    {
+      $len = strlen($endString);
+      if ($len == 0) {
+        return true;
+      }
+      return substr($string, -$len) === $endString;
     }
 }
