@@ -7,54 +7,143 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Providers\RouteServiceProvider;
+use File;
 
 use App\Models\UsdmPrice;
 
 class CryptoScreenerController extends Controller
 {
-    private $setTime = ['0 minute', '-2 minute', '-5 minute', '-10 minute', '-30 minute', '-1 hour', '-4 hour', '-24 hour'];
-    private $col_list = ['last_price', 'm_2', 'm_5', 'm_10', 'm_30', 'h_1', 'h_4', 'h_24'];
+    private $setTime = ['0 minute','-2 minute', '-5 minute', '-10 minute', '-30 minute'];
+    //private $setTime = ['0 minute','-2 minute', '-5 minute', '-10 minute', '-30 minute', '-1 hour', '-4 hour', '-24 hour'];
+    private $col_list = ['last_price','m_2', 'm_5', 'm_10', 'm_30', 'h_1', 'h_4', 'h_24'];
     private $col_test = ['data1', 'data2'];
 
     public function getPremiumIndex() {
         $response = Http::get(RouteServiceProvider::BINANCE_FAPI.'/premiumIndex');
+
+        $data = $response->getBody()->getContents();
+
+        $dataArr = json_decode($data,true);
+        $newDataArr = [];
+
+        foreach($dataArr as $index => $coin){
+            $_c = $coin['symbol'];
+            if ($this->endsWith($_c, "BUSD") || $this->startsWith($_c,'HIGH')) {
+                unset($dataArr[$index]);
+
+                //array_push($newDataArr,['symbol'=>$coin['symbol'],'markPrice'=>$coin['markPrice']]);
+            }
+        }
+
+
         UsdmPrice::create([
-            'jsondata' => $response->getBody()->getContents(),
+            'jsondata' => json_encode($dataArr),
             'time' => date('Y-m-d H:i')
         ]);
 
-        //send notis to telegram
-        //https://api.telegram.org/bot5684645252:AAE-yYoJAo0GPwvjvmDA-Y2GF72gVYE6Vts/sendMessage?chat_id=5463888647&text=hi
-        $timer = $this->setTimeToGetUsdmPrice();
-        $usdm_price = $this->getUsdmPriceByTime($timer);
 
-        $key_values = array_column($usdm_price, 'm_5ch'); 
-        array_multisort($key_values, SORT_DESC, $usdm_price);
+        /*
+        $fileName = date('Y-m-d H:i') . '.json';
+        $fileStorePath = public_path('/files/json/'.$fileName);
+  
+        File::put($fileStorePath, json_encode($newDataArr));
+        */
 
-        foreach($usdm_price as $index => $coin){
-             //unset busd
-            if ($this->endsWith($coin['symbol'], "USDT")) {
-                if(((float)$coin['m_5ch'] >= 2) || ((float)$coin['m_5ch'] <= (-2))){
-                    $this->sendTelegram($coin['symbol'],$coin['m_5ch']);
-                }
-            }
+        return response()->json(['error' => null, 'data' => json_encode($dataArr)], 200);
 
-            
-        }
-        
         
     }
 
-    private function sendTelegram($symbol,$chamgePerc){
-        $type = 'LONG';
+    public function indicators(){
+        //send notis to telegram
+        //https://api.telegram.org/bot5684645252:AAE-yYoJAo0GPwvjvmDA-Y2GF72gVYE6Vts/sendMessage?chat_id=5463888647&text=hi
+        //$timer = $this->setTimeToGetUsdmPrice();
 
-        if($chamgePerc <=0){
-            $type = 'SHORT'; 
+        //return response()->json(['error' => null, 'data' => $timer], 200);
+
+        //$usdm_price = $this->getUsdmPriceByTime($timer);
+
+        $priceDatas = UsdmPrice::orderBy('created_at', 'DESC')->skip(0)->take(30)->get(); 
+
+        $coins = [];
+
+
+        foreach($priceDatas as $index => $row){
+            $jsondata = $row['jsondata'];
+            if(!is_null($jsondata) && $jsondata != ''){
+                $jsondata = json_decode($jsondata,true);
+
+                foreach($jsondata as $index2 =>$d){
+                    $coins[$d['symbol']][$index] = (float)$d['markPrice'];
+                }
+                
+            }
         }
 
-        $msg = sprintf('%s %s change %s',$type,$symbol,$chamgePerc).'%';
+
+        foreach($coins as $index => $coin){
+            $symbol = $index;
+            $priceM1 = $coin[0];
+            $priceM2 = $coin[1];
+            $priceM3 = $coin[2];
+            $priceM4 = $coin[3];
+            $priceM5 = $coin[4];
+            $priceM6 = $coin[5];
+            $priceM7 = $coin[6];
+            $priceM8 = $coin[7];
+            $priceM9 = $coin[8];
+            $priceM10 = $coin[9];
+            $priceM15 = $coin[14];
+            $priceM20 = $coin[19];
+            $priceM25 = $coin[24];
+            $priceM30 = $coin[29];
+
+            $change2Min = round((($priceM1-$priceM2)/$priceM1)*100,2);
+            $change5Min = round((($priceM1-$priceM5)/$priceM5)*100,2);
+            $change10Min = round((($priceM1-$priceM10)/$priceM10)*100,2);
+
+            if($symbol =='BTCUSDT'){
+                if(($change2Min >= 0.3) && ($priceM1 > $priceM2) && ($priceM2 > $priceM3)){
+                    $msg = sprintf('%s,LONG %s%% in 1min',$symbol,$change2Min);
+
+                    $this->sendTelegram($change2Min,$msg);
+
+                }elseif(($change2Min <= -0.3) &&($priceM1<$priceM2) && ($priceM2 < $priceM3)){
+                    $msg = sprintf('%s,SHORT %s%% in 2min',$symbol,$change2Min);
+                    $this->sendTelegram($change2Min,$msg);
+                }
+            }else{
+                if(($change2Min >= 1) && ($priceM1 > $priceM2) && ($priceM2 > $priceM3)){
+                    $msg = sprintf('%s,LONG %s%% in 1min',$symbol,$change2Min);
+
+                    $this->sendTelegram($change2Min,$msg);
+
+                }elseif(($change5Min >=1.5) &&($priceM1>$priceM2) && ($priceM1 > $priceM3) && ($priceM1 > $priceM5) && ($priceM5 > $priceM10) && ($priceM10 > $priceM15) && ($priceM15 > $priceM20) && ($priceM20 > $priceM25)){
+                    $msg = sprintf('%s,LONG trading %s%% in 5min',$symbol,$change5Min);
+                    $this->sendTelegram($change5Min,$msg);
+
+                }elseif(($change2Min <= -1) &&($priceM1<$priceM2) && ($priceM2 < $priceM3)){
+                    $msg = sprintf('%s,SHORT %s%% in 2min',$symbol,$change2Min);
+                    $this->sendTelegram($change2Min,$msg);
+                }elseif(($change5Min <= -1.5) &&($priceM1<$priceM2) && ($priceM1 < $priceM3) && ($priceM1 < $priceM5) && ($priceM5 < $priceM10) && ($priceM10 < $priceM15) && ($priceM15 < $priceM20) && ($priceM20 < $priceM25)){
+                    $msg = sprintf('%s,SHORT %s%% in 5min',$symbol,$change5Min);
+                    $this->sendTelegram($change5Min,$msg);
+                }
+            }
 
 
+            
+
+        }
+
+    
+
+        return response()->json(['error' => null, 'data' => $coins], 200);
+
+
+    }
+
+    private function sendTelegram($chamgePerc,$msg = ''){
         $ch = curl_init('https://api.telegram.org/bot5684645252:AAE-yYoJAo0GPwvjvmDA-Y2GF72gVYE6Vts/sendMessage?chat_id=-609089255&text='.$msg);
 
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
@@ -88,40 +177,17 @@ class CryptoScreenerController extends Controller
 
     private function getUsdmPriceByTime($timer) {
         $usdm_list = [];
+        
         foreach($timer as $index => $time) {
             $usdm = UsdmPrice::where('time', $time)->first();
-            if(isset($usdm)) {
-                $toJson = json_decode($usdm->jsondata, true);
 
+            
 
-                
-                if($index == 0) {
-                    foreach($toJson as $item) {
-                        $markPrice = $item['markPrice'];
-                
-                        array_push($usdm_list, ['symbol' => $item['symbol'], $this->col_list[0] => $markPrice]);
-                    }
-                }else{
-                    foreach($toJson as $key => $item) {
-                        $markPrice = $item['markPrice'];
-                       
-
-                        $usdm_list[$key][$this->col_list[$index]] = $markPrice;
-                    }
-                }
-                // array_push($usdm_list, json_decode($usdm->jsondata, true));
-                // Log::debug($usdm_list);
-
-                
-            }
+            
         }
 
-        //unset busd
-        foreach($usdm_list as $index => $coin){
-            if ($this->endsWith($coin['symbol'], "BUSD")) {
-                unset($usdm_list[$index]);
-            }
-        }
+        return $usdm_list;
+
 
         //cal %
         foreach($usdm_list as $index => $coin){
@@ -158,5 +224,11 @@ class CryptoScreenerController extends Controller
         return true;
       }
       return substr($string, -$len) === $endString;
+    }
+
+    private function startsWith ($string, $startString)
+    {
+        $len = strlen($startString);
+        return (substr($string, 0, $len) === $startString);
     }
 }

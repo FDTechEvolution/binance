@@ -37,6 +37,9 @@ Route::prefix('/crypto-screener')->group(function () {
 });
 
 Route::get('/update-avg-price', [FeatureController::class, 'update_avg_price']);
-Route::get('/update-crypto-screener', [CryptoScreenerController::class, 'getPremiumIndex']);
+
+Route::get('/update-crypto', [CryptoScreenerController::class, 'getPremiumIndex']);
+Route::get('/update-crypto-screener', [CryptoScreenerController::class, 'indicators']);
+
 Route::get('/orders/get-order', [OrderHistoryController::class, 'getOrder']);
 Route::get('/orders/get-coin', [OrderHistoryController::class, 'getCoin']);
