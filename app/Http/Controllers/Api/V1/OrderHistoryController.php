@@ -13,8 +13,11 @@ use App\Models\OrderHistory;
 class OrderHistoryController extends Controller
 {
     public function getOrder() {
-        $apiKey = 'VACCYl1MGhz26mydgL6aLh9pEM6ra3w6gboq3azLK3EUCcOkXCc64KuneIF593RK';
-        $secretKey = 'ck4SNw4hMB9gu42mUnhRfOPoc583hLUY1IJ3a6OoWK6q2eZ5EZmejHZQj5yb35mL';
+        // $apiKey = 'VACCYl1MGhz26mydgL6aLh9pEM6ra3w6gboq3azLK3EUCcOkXCc64KuneIF593RK';
+        // $secretKey = 'ck4SNw4hMB9gu42mUnhRfOPoc583hLUY1IJ3a6OoWK6q2eZ5EZmejHZQj5yb35mL';
+
+        $apiKey = '06DdLQZsreFXf726eD5EqmxomP9RWYpz8VHdmqFPLVcCVyCDhoK0Fc27CbXHoofw';
+        $secretKey = 'HlYXRHQo2HV6BxdVTDUF6xntn4izHJ0RVfT71pcPo5vODxOl6rvkmasG4YBc5V0B';
 
         $start = strtotime('-3 Hour').'000';
         $end = strtotime('now').'000';
