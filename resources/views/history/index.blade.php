@@ -141,12 +141,12 @@
                     <hr/>
 
                     <div class="row mt-4">
-                        <div class="col-6"></div>
-                        <div class="col-3 text-right py-2">
-                            <strong>ALL SUM : </strong>
+                        <div class="col-md-6 col-12"></div>
+                        <div class="col-md-3 col-5 text-right py-2">
+                            <strong>SUM PNL : </strong>
                         </div>
-                        <div class="col-3 text-center py-2" id="col-of-sum">
-                            <strong id="sum-of-day"></strong>
+                        <div class="col-md-3 col-7 text-center py-2" id="col-of-sum">
+                            <strong id="sum-of-day"></strong><strong> USDT</strong>
                         </div>
                     </div>
                     
