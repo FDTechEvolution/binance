@@ -68,7 +68,7 @@ class CryptoScreenerController extends Controller
 
         //$usdm_price = $this->getUsdmPriceByTime($timer);
 
-        $priceDatas = UsdmPrice::orderBy('created_at', 'DESC')->skip(0)->take(30)->get(); 
+        $priceDatas = UsdmPrice::orderBy('created_at', 'DESC')->skip(0)->take(100)->get(); 
 
         $coins = [];
 
@@ -102,13 +102,17 @@ class CryptoScreenerController extends Controller
             $priceM20 = $coin[19];
             $priceM25 = $coin[24];
             $priceM30 = $coin[29];
+            $priceM40 = $coin[39];
+            $priceM60 = $coin[59];
+            $priceM80 = $coin[79];
+            $priceM100 = $coin[99];
 
-            $change2Min = round((($priceM1-$priceM2)/$priceM1)*100,2);
-            $change5Min = round((($priceM1-$priceM5)/$priceM5)*100,2);
-            $change10Min = round((($priceM1-$priceM10)/$priceM10)*100,2);
+            $change2Min = round((($priceM1-$priceM3)/$priceM3)*100,2);
+
+            $change5Min = round((($priceM1-$priceM8)/$priceM8)*100,2);
 
             if($symbol =='BTCUSDT'){
-                if(($change2Min >= 0.3)){
+                if(($change2Min >= 0.3) && ($priceM2 > $priceM3) && ($priceM3 > $priceM4)){
                     $msg = sprintf('%s,LONG %s%% in 1min',$symbol,$change2Min);
 
                     $this->sendTelegram($change2Min,$msg);
@@ -122,21 +126,23 @@ class CryptoScreenerController extends Controller
                 }
 
             }else{
-                if(($change2Min >= 1) && ($priceM1 > $priceM2) && ($priceM2 > $priceM3)){
+                if(($change2Min >= 1)  && ($priceM2 > $priceM3) && ($priceM3 > $priceM4) && ($priceM4 > $priceM5)){
                     $msg = sprintf('%s,LONG %s%% in 1min',$symbol,$change2Min);
 
                     $this->sendTelegram($change2Min,$msg);
 
-                }elseif(($change5Min >=1.5) &&($priceM1>$priceM2) && ($priceM1 > $priceM3) && ($priceM1 > $priceM5)){
+                }elseif(($change5Min >=1.5) && ($priceM1 > $priceM3) && ($priceM1 > $priceM5) && ($priceM2 > $priceM7) && ($priceM3 > $priceM8) && ($priceM3 > $priceM20) && ($priceM3 > $priceM40) && ($priceM3 > $priceM80) && ($priceM3 > $priceM100)){
                     $msg = sprintf('%s,LONG trading %s%% in 5min',$symbol,$change5Min);
-                    $this->sendTelegram($change5Min,$msg);
+                    //$this->sendTelegram($change5Min,$msg);
 
-                }elseif(($change2Min <= -1) &&($priceM1<$priceM2) && ($priceM2 < $priceM3)){
+
+
+                }elseif(($change2Min <= -1) && ($priceM2 < $priceM3) && ($priceM3 < $priceM4) && ($priceM4 < $priceM5)){
                     $msg = sprintf('%s,SHORT %s%% in 2min',$symbol,$change2Min);
                     $this->sendTelegram($change2Min,$msg);
-                }elseif(($change5Min <= -1.5) &&($priceM1<$priceM2) && ($priceM1 < $priceM3) && ($priceM1 < $priceM5)){
+                }elseif(($change5Min <= -1.5) && ($priceM1 < $priceM3) && ($priceM1 < $priceM5) && ($priceM2 < $priceM7) && ($priceM3 < $priceM8) && ($priceM3 < $priceM20) && ($priceM3 > $priceM40) && ($priceM3 < $priceM80) && ($priceM3 < $priceM100)){
                     $msg = sprintf('%s,SHORT %s%% in 5min',$symbol,$change5Min);
-                    $this->sendTelegram($change5Min,$msg);
+                    //$this->sendTelegram($change5Min,$msg);
                 }
             }
 
